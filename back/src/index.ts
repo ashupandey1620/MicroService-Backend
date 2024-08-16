@@ -24,6 +24,7 @@ app.get('/', (req: Request, res: Response) => {
         message: 'Hello World',
     });
 });
+
 app.use(morgan('tiny'));
 app.use('/api', authRoutes);
 app.use('/api', candidatesRoutes);

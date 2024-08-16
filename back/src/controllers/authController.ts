@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import KeyModel from "../models/keyModel";
-import { generateRandomPassword } from '../utils/generatePassword';
+
 
 
 

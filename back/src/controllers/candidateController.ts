@@ -7,6 +7,10 @@ import KeyModel from "../models/keyModel";
 import User from "../models/adminUserModel";
 import Key from "../models/keyModel";
 import ManagementUserModel from "../models/managementUserModel";
+import { generateRandomPassword } from '../utils/generatePassword';
+import nodemailer from 'nodemailer';
+import Admin from "../models/adminUserModel";
+import ManagementUser from "../models/managementUserModel";
 
 
 
@@ -26,16 +30,34 @@ const addCandidate = async (req: Request, res: Response) => {
         firstName,
         lastName,
         email,
-        password,
         phone,
         address,
         level,
         department
     } = req.body;
 
+    // Generate a random password
+    const password = generateRandomPassword();
+
 
     try {
-        console.log("Entered thr try block");
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailRegex.test(email)){
+            return res.status(400).json({
+                message: "Enter Proper Email ID, EmailID not in Format",
+            });
+        }
+
+        const isUser = await ManagementUser.findOne({ email });
+        if (isUser)
+            return res.status(400).json({
+                message: `Management User with same Email Id already exist with name ${isUser.firstName} ${isUser.lastName}`,
+            });
+
+
+
+        // console.log("Entered thr try block");
+
         const managementUser = new ManagementUserModel({
             firstName,
             lastName,
@@ -51,8 +73,31 @@ const addCandidate = async (req: Request, res: Response) => {
 
         await managementUser.save();
 
+
+        // Set up the nodemailer transporter
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587'),
+            // secure: process.env.SMTP_PORT === '465',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
+
+        // Email options
+        const mailOptions = {
+            from: `"Admin" <${process.env.SMTP_USER}>`,
+            to: email,
+            subject: 'Your Account Has Been Created',
+            text: `Hello ${firstName} ${lastName} ,\n\nYour account has been created. Your password is: ${password}\n\nPlease change your password after logging in.`,
+        };
+
+        // Send the email
+        await transporter.sendMail(mailOptions);
+
         res.status(201).json({
-            "message":"Management Person Added successfully",
+            "message":"Management Person Added successfully, and mail is send to him",
             "status":"success"
         });
     } catch (error) {
@@ -82,6 +127,8 @@ const addManyCandidate = async (req: Request, res: Response) => {
     try {
         console.log(`user ID ${userId}`);
         console.log(`Candidates are  ${candidates}`);
+
+
 
         const candidatesWithUserId = candidates.map(candidate => ({
             firstName: candidate.firstName,
