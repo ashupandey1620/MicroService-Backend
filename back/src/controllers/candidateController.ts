@@ -2,12 +2,12 @@
 import { Request, Response } from "express";
 import CandidateModel from "../models/candidateModel";
 import Candidate from "../models/candidateModel";
-import UserModel from "../models/userModel";
+import UserModel from "../models/adminUserModel";
 import KeyModel from "../models/keyModel";
-import User from "../models/userModel";
+import User from "../models/adminUserModel";
 import Key from "../models/keyModel";
-import jwt from "jsonwebtoken";
-import {generateAccessToken} from "../utils/token";
+import ManagementUserModel from "../models/managementUserModel";
+
 
 
 /**
@@ -20,30 +20,39 @@ import {generateAccessToken} from "../utils/token";
 const addCandidate = async (req: Request, res: Response) => {
 
     const userId = req.userId;
-    console.log(`User is ${userId}`);
+    console.log(` Management User is ${userId}`);
 
     const {
         firstName,
         lastName,
-        email
+        email,
+        password,
+        phone,
+        address,
+        level,
+        department
     } = req.body;
 
 
     try {
         console.log("Entered thr try block");
-        const candidate = new CandidateModel({
+        const managementUser = new ManagementUserModel({
             firstName,
             lastName,
             email,
-            userId
+            password,
+            phone,
+            address,
+            level,
+            department
         });
 
-        console.log(candidate);
+        console.log(managementUser);
 
-        await candidate.save();
+        await managementUser.save();
 
         res.status(201).json({
-            "message":"Candidate Added successfully",
+            "message":"Management Person Added successfully",
             "status":"success"
         });
     } catch (error) {
@@ -51,11 +60,6 @@ const addCandidate = async (req: Request, res: Response) => {
     }
 }
 
-interface Candidate {
-    firstName: string;
-    lastName: string;
-    email: string;
-}
 
 
 /**
@@ -64,6 +68,13 @@ interface Candidate {
  * Candidates are added with respect to its owner
  * userId field is added to the each candidate
  */
+
+interface Candidate {
+    firstName: string;
+    lastName: string;
+    email: string;
+}
+
 
 const addManyCandidate = async (req: Request, res: Response) => {
     const userId = req.userId;

@@ -1,8 +1,10 @@
 import { db } from "../config";
 import mongoose from "mongoose";
 
+const username = "ashupandey1620"
+const password = "supersecretpassword"
 // const dbURI = `mongodb+srv://${db.user}:${db.password}@${db.host}/?retryWrites=true&w=majority&appName=${db.name}`;
-const dbURI = "mongodb+srv://ashupandey1620:SmHfBbtDVeaNqJNu@recruitcrm.ngwlkdv.mongodb.net/?retryWrites=true&w=majority&appName=recruitcrm"
+const dbURI = `mongodb+srv://${username}:${password}@recruitcrm.ngwlkdv.mongodb.net/?retryWrites=true&w=majority&appName=recruitcrm`
 const options = {
   autoIndex: true,
   minPoolSize: db.minPoolSize, //minimum number of connections database will keep open.

@@ -1,9 +1,11 @@
-import User, { IUser } from "../models/userModel";
+import Admin, { IAdmin } from "../models/adminUserModel";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import jwt from "jsonwebtoken";
 import KeyModel from "../models/keyModel";
+import { generateRandomPassword } from '../utils/generatePassword';
+
 
 
 
@@ -23,26 +25,52 @@ const API_KEY_SECRET = process.env.API_KEY_SECRET || ""
  *
  */
 export const register = async (req: Request, res: Response) => {
+  console.log(`Request${req}`);
+  const { firstName, lastName, email, password, phone, backPhone, backEmail, isSuper} = req.body;
 
 
-  const { firstName, lastName, email, password } = req.body;
   try {
-    const isUser = await User.findOne({ email });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)){
+      res.status(400).json({
+        message: "Enter Proper Email ID, EmailID not in Format",
+      });
+      return
+    }
+
+    const isUser = await Admin.findOne({ email });
     if (isUser)
       return res.status(400).json({
-        message: "User already exists",
+        message: "Admin with same EmailId already exists",
       });
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({
+
+    const admin = new Admin({
       firstName,
       lastName,
       email,
       password: hashedPassword,
+      phone: phone,
+      backPhone: backPhone,
+      backEmail: backEmail,
+      isSuper: isSuper,
     });
-    await user.save();
-    res.status(201).json({
-      message: "User Registration Successful",
-    });
+
+    console.log(`Admin ${admin}`);
+    await admin.save();
+
+    if(isSuper){
+      res.status(201).json({
+        message: "Super Admin Added Successful, Good Morning Sir",
+      });
+    }
+    else {
+      res.status(201).json({
+        message: "Admin Added Successful, Restricted Control",
+      });
+
+    }
   } catch (err) {
     res.status(500).json({
       message: "Internal Server Error",
@@ -61,10 +89,11 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
+    const user = await Admin.findOne({ email });
     if (!user)
       return res.status(400).json({
-        message: "User not found",
+        message: "Admin not found"
+
       });
     const valid = await bcrypt.compare(password, user.password);
     if (!valid)
@@ -139,7 +168,7 @@ export const getApiKey = async (req: Request, res: Response) => {
     console.log(`Email ${email}`)
     console.log(`password ${password}`)
 
-    const user = await User.findOne({ email });
+    const user = await Admin.findOne({ email });
     console.log(`User ${user}`)
 
     if (!user)
