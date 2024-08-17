@@ -11,6 +11,7 @@ import { generateRandomPassword } from '../utils/generatePassword';
 import nodemailer from 'nodemailer';
 import Admin from "../models/adminUserModel";
 import ManagementUser from "../models/managementUserModel";
+import { sendSms } from '../utils/smsUtils';
 
 
 
@@ -73,8 +74,8 @@ const addCandidate = async (req: Request, res: Response) => {
 
         await managementUser.save();
 
+        const smsBody = `Hello ${firstName} ${lastName}, you are invited to the marriage of Manisha and Prakhar`;
 
-        // Set up the nodemailer transporter
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: parseInt(process.env.SMTP_PORT || '587'),
@@ -84,16 +85,16 @@ const addCandidate = async (req: Request, res: Response) => {
                 pass: process.env.SMTP_PASS,
             },
         });
-
         // Email options
         const mailOptions = {
             from: `"Admin" <${process.env.SMTP_USER}>`,
             to: email,
-            subject: 'Your Account Has Been Created',
-            text: `Hello ${firstName} ${lastName} ,\n\nYour account has been created. Your password is: ${password}\n\nPlease change your password after logging in.`,
+            subject: 'Marriage Invitation',
+            text: `Helle ${firstName} ${lastName}, You are invited to the Marriage of Manisha and Prakhar`,
         };
 
         // Send the email
+        await sendSms(`+91${phone}`, smsBody);
         await transporter.sendMail(mailOptions);
 
         res.status(201).json({
