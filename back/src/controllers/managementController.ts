@@ -74,7 +74,7 @@ const addCandidate = async (req: Request, res: Response) => {
 
         await managementUser.save();
 
-        const smsBody = `Hello ${firstName} ${lastName}, you are invited to the marriage of Manisha and Prakhar`;
+        const smsBody = `Hello ${firstName} ${lastName}, You have been added to the Management Team`;
 
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
@@ -90,7 +90,7 @@ const addCandidate = async (req: Request, res: Response) => {
             from: `"Admin" <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'Marriage Invitation',
-            text: `Helle ${firstName} ${lastName}, You are invited to the Marriage of Manisha and Prakhar`,
+            text: `Helle ${firstName} ${lastName}, You have been added to the Management Team`,
         };
 
         // Send the email
@@ -157,12 +157,12 @@ const addManyCandidate = async (req: Request, res: Response) => {
  * userID provided in the param
  *
  */
-const deleteCandidate = async (req: Request, res: Response) => {
+const deleteManagementTeam = async (req: Request, res: Response) => {
 
     try {
-        const deletedCandidate = await CandidateModel.findByIdAndDelete(req.params.id);
+        const deletedCandidate = await ManagementUserModel.findByIdAndDelete(req.params.id);
         res.status(200).json({
-            message: "Candidate deleted successfully",
+            message: "Management Person deleted successfully",
         });
     } catch (error) {
         res.status(500).json({ message: error });
@@ -175,11 +175,11 @@ const deleteCandidate = async (req: Request, res: Response) => {
  * DELETE ALL CANDIDATES deletes all the candidates entry from the mongodb CANDIDATE DOCUMENT COLLECTION
  *
  */
-const deleteAllCandidate = async (req: Request, res:Response) => {
+const deleteAllManagement = async (req: Request, res:Response) => {
     try {
         const deleteResult = await CandidateModel.deleteMany({});
         res.status(200).json({
-            message: `${deleteResult.deletedCount} Candidates deleted successfully`
+            message: `${deleteResult.deletedCount} Management Person from the database has been deleted`
         });
     } catch (error) {
         res.status(500).json({ message: error });
@@ -331,8 +331,8 @@ export const protectedFun = async (req: Request, res: Response) => {
 export default {
     addCandidate,
     addManyCandidate,
-    deleteCandidate,
-    deleteAllCandidate,
+    deleteManagementTeam,
+    deleteAllManagement,
     getAllCandidate,
     getUserProfile,
     getUserProfilePublic,

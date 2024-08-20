@@ -5,7 +5,7 @@ import cors from 'cors';
 import authRoutes from "./routes/authRoutes";
 
 import morgan from 'morgan';
-import candidatesRoutes from "./routes/candidatesRoutes";
+import candidatesRoutes from "./routes/ManagementRoutes";
 dotenv.config();
 const app = express();
 const host = "0.0.0.0";
