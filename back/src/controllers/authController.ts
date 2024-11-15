@@ -1,12 +1,8 @@
-import Admin, { IAdmin } from "../models/adminUserModel";
+import User, { IUser } from "../models/UserModel";
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "../utils/token";
 import jwt from "jsonwebtoken";
-import KeyModel from "../models/keyModel";
-
-
-
 
 
 interface User {
@@ -20,13 +16,11 @@ interface ApiKeyMap {
 const API_KEY_SECRET = process.env.API_KEY_SECRET || ""
 
 /**
- *
  * REGISTER Controller helps in registering a user after taking its data from the user
- *
  */
 export const register = async (req: Request, res: Response) => {
   console.log(`Request${req}`);
-  const { firstName, lastName, email, password, phone, backPhone, backEmail, isSuper} = req.body;
+  const { fullname, email, password, username} = req.body;
 
 
   try {
@@ -38,39 +32,28 @@ export const register = async (req: Request, res: Response) => {
       return
     }
 
-    const isUser = await Admin.findOne({ email });
+    const isUser = await User.findOne({ email });
     if (isUser)
       return res.status(400).json({
-        message: "Admin with same EmailId already exists",
+        message: "User with same EmailId already exists",
       });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const admin = new Admin({
-      firstName,
-      lastName,
-      email,
+    const user = new User({
+      fullname: fullname,
+      email: email,
       password: hashedPassword,
-      phone: phone,
-      backPhone: backPhone,
-      backEmail: backEmail,
-      isSuper: isSuper,
+      username: username
     });
 
-    console.log(`Admin ${admin}`);
-    await admin.save();
+    console.log(`User ${user}`);
+    await user.save();
 
-    if(isSuper){
-      res.status(201).json({
-        message: "Super Admin Added Successful, Good Morning Sir",
-      });
-    }
-    else {
-      res.status(201).json({
-        message: "Admin Added Successful, Restricted Control",
-      });
+    res.status(201).json({
+      message: "User Added Successful, Restricted Control",
+    });
 
-    }
   } catch (err) {
     res.status(500).json({
       message: "Internal Server Error",
@@ -81,18 +64,16 @@ export const register = async (req: Request, res: Response) => {
 
 
 /**
- *
  * Login Controller provides help in logging in a user on the basis of its credentials
  * it provide back the ACCESS TOKEN and the REFRESH TOKEN back to the user
- *
  */
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   try {
-    const user = await Admin.findOne({ email });
+    const user = await User.findOne({ email });
     if (!user)
       return res.status(400).json({
-        message: "Admin not found"
+        message: "User not found"
 
       });
     const valid = await bcrypt.compare(password, user.password);
@@ -117,7 +98,6 @@ export const login = async (req: Request, res: Response) => {
 
 
 /**
- *
  * REFRESH TOKEN is used to get a new ACCESS TOKEN from the server
  * It gives the response with a new ACCESS TOKEN
  */
@@ -161,59 +141,5 @@ export const refreshToken = async (req: Request, res: Response) => {
  */
 
 
-export const getApiKey = async (req: Request, res: Response) => {
-
-  try{
-    const { email, password } = req.body;
-    console.log(`Email ${email}`)
-    console.log(`password ${password}`)
-
-    const user = await Admin.findOne({ email });
-    console.log(`User ${user}`)
-
-    if (!user)
-      return res.status(400).json({
-        message: "User not found",
-      });
-
-    const valid = await bcrypt.compare(password, user.password);
-    console.log(`Valid ${valid}`)
-    if (!valid)
-      return res.status(400).json({
-        message: "Invalid Credentials",
-      });
-
-    let userID = user.id;
-
-    console.log(userID)
-    const keyPresent = await KeyModel.findOne({ userId: userID });
-
-    console.log(`Key Present ${keyPresent}`)
-
-    let apiKey = ""
-    if (!keyPresent) {
-      //UserId is already present in the Key Database, So don't need to generate it again
-       apiKey = jwt.sign({email: user.email}, API_KEY_SECRET, {expiresIn: '30d'});
-
-      const key = new KeyModel({
-            apiKey,
-            userId: user.id,
-          }
-      );
-
-      console.log(key);
-      const savedKey = await key.save();
-
-    }
-    else{
-       apiKey = keyPresent.apiKey;
-    }
-
-    res.json({ apiKey });
-  }
-  catch(error){
-    res.status(500).json({message: error});
-  }
-}
 
 

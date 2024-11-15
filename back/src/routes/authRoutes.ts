@@ -1,12 +1,11 @@
 import { Router } from 'express';
-import { register, login, refreshToken,  getApiKey} from '../controllers/authController';
+import { register, login, refreshToken} from '../controllers/authController';
 
 const router = Router();
 
 router.post('/register', register);
 router.post('/login', login);
 router.post('/refresh_token', refreshToken);
-router.post('/getApiKey', getApiKey);
 
 
 export default router;

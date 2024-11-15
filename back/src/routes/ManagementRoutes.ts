@@ -6,19 +6,10 @@ import managementController from "../controllers/managementController";
 const router = Router();
 
 //candidates data routes
-router.post("/MStaff", authenticateToken, managementController.addCandidate);
-router.post("/ManyMStaff", authenticateToken, managementController.addManyCandidate);
-router.get("/MStaff", authenticateToken, managementController.getAllCandidate);
+router.post("/car", authenticateToken, managementController.addCar);
+router.get("/getAllCar", authenticateToken, managementController.getAllCar);
 
-router.get("/deleteMStaff/:id", authenticateToken, managementController.deleteManagementTeam);
-router.get("/deleteAllMStaff", authenticateToken, managementController.deleteAllManagement);
-
-router.get("/getUserProfile", authenticateToken, managementController.getUserProfile);
-
-router.post("/public/profile",  managementController.getUserProfilePublic);
-router.get("/public/candidate",  managementController.getAllCandidatesPublic);
-router.post('/protected', authenticateToken, managementController.protectedFun);
-
-
+router.get("/deleteCar/:id", authenticateToken, managementController.deleteCar);
+router.get("/deleteAllCar", authenticateToken, managementController.deleteAllCar);
 
 export default router;
